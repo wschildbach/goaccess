@@ -1,0 +1,2 @@
+#!/bin/sh
+nc -4ulp 6666 | /bin/goaccess - $*

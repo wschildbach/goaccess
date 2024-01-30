@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     linux-headers \
     ncurses-dev \
     ncurses-static \
+    netcat-openbsd \
     tzdata
 
 # GoAccess
@@ -24,10 +25,15 @@ RUN CC="clang" CFLAGS="-O3 -static" LIBS="$(pkg-config --libs openssl)" ./config
 RUN make && make DESTDIR=/dist install
 
 # Container
+#FROM alpine:3
+#RUN apk add --no-cache netcat-openbsd
 FROM busybox:musl
+
 COPY --from=builds /dist /
 COPY --from=builds /usr/share/zoneinfo /usr/share/zoneinfo
 VOLUME /var/www/goaccess
 EXPOSE 7890
-ENTRYPOINT ["/bin/goaccess"]
+COPY --from=builds /usr/bin/nc /usr/bin/nc
+COPY udp-goaccess /
+ENTRYPOINT ["/udp-goaccess"]
 CMD ["--help"]
